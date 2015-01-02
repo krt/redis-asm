@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Redis::Asm::VERSION
   spec.authors       = ["Masato Yamaguchi"]
   spec.email         = ["karateka2000@gmail.com"]
-  spec.summary       = "Fast fuzzy string search on Redis using Lua. UTF-8 Ready."
-  spec.description   = "Fast ASM(Approximate String Matching) by calucuating edit distance within the collecitons such as ZSET, HASH, LIST, SET on Redis using Lua script. It provides you to search multi-byte characters correctly, because it recognizes lead-byte of UTF-8 strings."
+  spec.summary       = "Fast fuzzy string search on Redis using Lua. UTF-8 ready."
+  spec.description   = "Fast ASM (Approximate String Matching) by calucuating edit distance within the collecitons such as ZSET, HASH, LIST, SET on Redis using Lua script. It provides you to search multi-byte characters correctly, because it recognizes lead-byte of UTF-8 strings."
   spec.homepage      = "http://github.com/krt/redis-asm"
   spec.license       = "MIT"
 
