@@ -1,10 +1,10 @@
 # Redis::Asm
 
-##### Fast fuzzy string search on Redis using Lua. UTF-8 Ready.
+##### Fast fuzzy string search on Redis using Lua. UTF-8 ready.
 
 ## Description
-Fast ASM(Approximate String Matching) by calculating edit distance within the collections such as ZSET, HASH, LIST, SET on Redis using Lua script.  
-Redis::Asm provides you to search multi-byte characters correctly, because it recognizes lead-byte of UTF-8 strings.
+Fast ASM (Approximate String Matching) by calculating edit distance within the collections such as ZSET, HASH, LIST, SET on Redis using Lua script.  
+`Redis::Asm` provides you to search multi-byte characters correctly, because it recognizes lead-byte of UTF-8 strings.
 
 ## Prerequisites
 This library requires a Redis server with Lua scripting support (EVAL and EVALSHA commands). This support was added in Redis 2.6.
@@ -35,6 +35,7 @@ asm = Redis::Asm.new(redis)
 To execute fuzzy search from Redis collections:
 ```ruby
 require 'json'
+require 'yaml'
 
 # asm.search(KEY, NEELDE, MAX_RESULTS=10)
 
@@ -100,9 +101,30 @@ puts JSON.parse(result).to_yaml
 % ruby search_bench.rb 弊社といたしましては
       user     system      total        real
   0.000000   0.000000   0.000000 (  0.063109)
-
 ```
 
+Also you can try benchmarking `Redis::Asm` running `bench/bench.rb` in console.  
+That's the result I've got on my machine.
+```sh
+krt@mbp% ruby bench.rb
+                             user     system      total        real
+          a :   1000 wd  0.000000   0.000000   0.000000 (  0.003485)
+          a :  10000 wd  0.000000   0.000000   0.000000 (  0.025130)
+          a : 100000 wd  0.000000   0.000000   0.000000 (  0.213464)
+          
+        baz :   1000 wd  0.000000   0.000000   0.000000 (  0.010732)
+        baz :  10000 wd  0.000000   0.000000   0.000000 (  0.073628)
+        baz : 100000 wd  0.000000   0.000000   0.000000 (  0.565700)
+        
+    rifmino :   1000 wd  0.000000   0.000000   0.000000 (  0.014601)
+    rifmino :  10000 wd  0.000000   0.000000   0.000000 (  0.082726)
+    rifmino : 100000 wd  0.000000   0.000000   0.000000 (  0.680512)
+    
+mskelngesol :   1000 wd  0.000000   0.000000   0.000000 (  0.014717)
+mskelngesol :  10000 wd  0.000000   0.000000   0.000000 (  0.086301)
+mskelngesol : 100000 wd  0.000000   0.000000   0.000000 (  0.623105)
+```
+*To be fair,* it's suitable for less or eql than about 10,000 words, for Redis blocks it's requests while executing Lua script.
 
 
 ## Contributing
