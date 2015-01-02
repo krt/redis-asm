@@ -24,10 +24,11 @@ describe Redis::Asm do
     hdata = test_data.inject({}){|ha, k| i += 1; ha.merge(i=>k)}
 
     redis.pipelined do |r|
-      redis.sadd SKEY, test_data
-      redis.zadd ZKEY, zdata
-      redis.mapped_hmset HKEY, hdata
-      test_data.each{|item| redis.rpush LKEY,item}
+      r.script :flush
+      r.sadd SKEY, test_data
+      r.zadd ZKEY, zdata
+      r.mapped_hmset HKEY, hdata
+      test_data.each{|item| r.rpush LKEY,item}
     end
   end
 

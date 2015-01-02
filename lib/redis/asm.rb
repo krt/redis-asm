@@ -14,12 +14,15 @@ class Redis
     end
 
     def search(key, needle, max_results=10)
-      @redis.evalsha(SHA1, :keys => [key], :argv => [needle, max_results])
+      begin
+        @redis.evalsha(SHA1, :keys => [key], :argv => [needle, max_results])
       rescue Exception => e
         if e.message =~ /NOSCRIPT/
-          @redis.eval script, :keys => [key], :argv => [needle, max_results]
+          @redis.script(:load, SCRIPT)
+          retry
         else
           raise e
+        end
       end
     end
   end
