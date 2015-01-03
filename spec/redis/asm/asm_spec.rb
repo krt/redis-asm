@@ -57,8 +57,8 @@ describe Redis::Asm do
     end
 
     it "result has fuzzy matched string" do
-      expect(result_set[1]).to eq({"haystack"=>"samples", "match"=>0.5})
-      expect(result_list[1]).to eq({"haystack"=>"samples", "match"=>0.5})
+      expect(result_set[1]).to eq({"haystack"=>"samples", "match"=>0.57142857142857})
+      expect(result_list[1]).to eq({"haystack"=>"samples", "match"=>0.57142857142857})
     end
 
     it "result size must be default limit(10)" do
@@ -97,8 +97,8 @@ describe Redis::Asm do
     end
 
     it "result has fuzzy matched string, zset has 'score' and hash has 'field'" do
-      expect(result_zset[1]).to eq({"haystack"=>"samples", "score"=>"119", "match"=>0.5})
-      expect(result_hash[1]).to eq({"haystack"=>"samples", "field"=>"119", "match"=>0.5})
+      expect(result_zset[1]).to eq({"haystack"=>"samples", "score"=>"119", "match"=>0.57142857142857})
+      expect(result_hash[1]).to eq({"haystack"=>"samples", "field"=>"119", "match"=>0.57142857142857})
     end
 
     it "result size must be default limit(10)" do
