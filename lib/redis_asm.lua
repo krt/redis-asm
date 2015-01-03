@@ -96,7 +96,7 @@ local function split_into_utf8_bytes(str)
 
   for i = 1, #str do
     offset_pos = i + offset
-    if offset_pos >= #str then
+    if offset_pos > #str then
       break
     end
 
