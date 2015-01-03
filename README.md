@@ -27,11 +27,40 @@ Or install it yourself as:
 
 ## Usage
 
-To initialize `Redis::Asm` with host and port:
+To initialize `Redis::Asm`:
 ```ruby
+require 'redis'
+require 'redis-asm'
+
+# Use Redis.current:
+redis = Redis.current
+
+# Initialize Redis with host and port:
 redis = Redis.new(:host => REDIS_HOST, :port => REDIS_PORT)
+
 asm = Redis::Asm.new(redis)
 ```
+
+
+First, prepare test data:
+```ruby
+data = %w(example samples abampere zzi 東京都 京都府)
+
+# key names
+keys = {}
+types = ['set', 'zset', 'hash', 'list']
+types.each{|t| keys[t] = "testdata:#{t}"}
+
+# reset Redis
+keys.values.each{|v| redis.del v }
+
+# set data to Redis
+redis.sadd         keys['set'],  data
+redis.zadd         keys['zset'], data.map.with_index{|d, i| [i+1, d]} 
+redis.mapped_hmset keys['hash'], ({}).tap{|h| data.each_with_index{|x,i| h[i+1] = x}}
+data.each{|d| redis.rpush keys['list'], d }
+```
+
 To execute fuzzy search from Redis collections:
 ```ruby
 require 'json'
@@ -39,46 +68,62 @@ require 'yaml'
 
 # asm.search(KEY, NEELDE, MAX_RESULTS=10)
 
-# To search from SET or LIST
+# To search from SET
+result = asm.search(keys['set'], 'example')
+# To search from LIST
+result = asm.search(keys['list'], 'example')
 
-result = asm.search(SET_OR_LIST_KEY, 'example')
 puts JSON.parse(result).to_yaml
 # ---
 # - haystack: example
 #   match: 1
 # - haystack: samples
-#   match: 0.5
+#   match: 0.57142857142857
 # - haystack: abampere
-#   match: 0.42857142857143
-.
-.
+#   match: 0.5
 
 # To search from HASH
 
 # Redis::Asm matches HASH values
 # each item has 'field' property
 
-result = asm.search(HASH_KEY, '東京都')
+result = asm.search(HASH_KEY, 'example')
 puts JSON.parse(result).to_yaml
 # ---
-# - haystack: "東京都"
-#   field: '126'
+# - haystack: example
+#   field: '1'
 #   match: 1
-# - haystack: "京都府"
-#   field: '125'
-#   match: 0.33333333333333
+# - haystack: samples
+#   field: '2'
+#   match: 0.57142857142857
+# - haystack: abampere
+#   field: '3'
+#   match: 0.5
 
 # To search from ZSET
 # each item has 'score' property
 
+result = asm.search(ZSET_KEY, 'example')
+puts JSON.parse(result).to_yaml
+# ---
+# - haystack: example
+#   score: '1'
+#   match: 1
+# - haystack: samples
+#   score: '2'
+#   match: 0.57142857142857
+# - haystack: abampere
+#   score: '3'
+#   match: 0.5
+```
+You can use UTF-8 multibyte chars:
+```ruby
 result = asm.search(ZSET_KEY, '東京都')
 puts JSON.parse(result).to_yaml
 # ---
 # - haystack: "東京都"
-#   score: '126'
 #   match: 1
 # - haystack: "京都府"
-#   score: '125'
 #   match: 0.33333333333333
 ```
 ## Performance
@@ -88,44 +133,41 @@ puts JSON.parse(result).to_yaml
  - ruby 2.1.5p273 [x86_64-darwin13.0]
  - Redis server v=2.6.17 bits=64
 
-```bash
-# search from 10,000 items of SETS
-# each item contains UTF-8 characters, and consists of between 1 and 30 chars.
-% ruby search_bench.rb stone
-      user     system      total        real
-  0.000000   0.000000   0.000000 (  0.038567)
-% ruby search_bench.rb 東京都
-      user     system      total        real
-  0.000000   0.000000   0.000000 (  0.022540)
-
-% ruby search_bench.rb 弊社といたしましては
-      user     system      total        real
-  0.000000   0.000000   0.000000 (  0.063109)
-```
-
-Also you can try benchmarking `Redis::Asm` running `bench/bench.rb` in console.  
+You can try benchmarking `Redis::Asm` running `./bench/bench.rb` in console.  
 That's the result I've got on my machine.
 ```sh
-krt@mbp% ruby bench.rb
+krt@mbp% ruby bench/bench.rb
                              user     system      total        real
-          a :   1000 wd  0.000000   0.000000   0.000000 (  0.003485)
-          a :  10000 wd  0.000000   0.000000   0.000000 (  0.025130)
-          a : 100000 wd  0.000000   0.000000   0.000000 (  0.213464)
-          
-        baz :   1000 wd  0.000000   0.000000   0.000000 (  0.010732)
-        baz :  10000 wd  0.000000   0.000000   0.000000 (  0.073628)
-        baz : 100000 wd  0.000000   0.000000   0.000000 (  0.565700)
-        
-    rifmino :   1000 wd  0.000000   0.000000   0.000000 (  0.014601)
-    rifmino :  10000 wd  0.000000   0.000000   0.000000 (  0.082726)
-    rifmino : 100000 wd  0.000000   0.000000   0.000000 (  0.680512)
-    
-mskelngesol :   1000 wd  0.000000   0.000000   0.000000 (  0.014717)
-mskelngesol :  10000 wd  0.000000   0.000000   0.000000 (  0.086301)
-mskelngesol : 100000 wd  0.000000   0.000000   0.000000 (  0.623105)
-```
-*To be fair,* it's suitable for less or eql than about 10,000 words, for Redis blocks it's requests while executing Lua script.
+          a :   1000 wd  0.000000   0.000000   0.000000 (  0.016898)
+          a :  10000 wd  0.000000   0.000000   0.000000 (  0.165706)
+          a : 100000 wd  0.000000   0.000000   0.000000 (  1.468973)
 
+        baz :   1000 wd  0.000000   0.000000   0.000000 (  0.014015)
+        baz :  10000 wd  0.000000   0.000000   0.000000 (  0.091153)
+        baz : 100000 wd  0.000000   0.000000   0.000000 (  0.651317)
+
+    rifmino :   1000 wd  0.000000   0.000000   0.000000 (  0.017831)
+    rifmino :  10000 wd  0.000000   0.000000   0.000000 (  0.108233)
+    rifmino : 100000 wd  0.000000   0.000000   0.000000 (  0.772444)
+
+mskelngesol :   1000 wd  0.000000   0.000000   0.000000 (  0.015920)
+mskelngesol :  10000 wd  0.000000   0.000000   0.000000 (  0.092513)
+mskelngesol : 100000 wd  0.000000   0.000000   0.000000 (  0.701796)
+
+       元気です :   1000 wd  0.000000   0.000000   0.000000 (  0.002177)
+       元気です :  10000 wd  0.000000   0.000000   0.000000 (  0.028857)
+       元気です : 100000 wd  0.000000   0.000000   0.000000 (  0.279001)
+```
+*NOTE:* To be fair, it's suitable for less or eql than about 10,000 words, for Redis blocks it's requests while executing Lua script.
+
+## Acknowledgment
+
+ - Words in test data from @atebits  
+https://github.com/atebits/Words  
+ - Some japanese multibyte words from @gkovacs  
+https://github.com/gkovacs/japanese-morphology
+ - Levenshtein algorythm from @wooorm  
+https://github.com/wooorm/levenshtein-edit-distance
 
 ## Contributing
 
