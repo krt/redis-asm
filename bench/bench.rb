@@ -37,12 +37,10 @@ Benchmark.bm(22) do |x|
 end
 
 # output results
-puts "results from 100000\n"
-setup_redis SKEY, dic, 100000
-needles.each do |needle|
-  puts "#{needle} :"
-  p JSON.parse(asm.search(SKEY, needle))
-  puts ""
-end
-
-
+# puts "results from 100000\n"
+# setup_redis SKEY, dic, 100000
+# needles.each do |needle|
+#   puts "#{needle} :"
+#   p JSON.parse(asm.search(SKEY, needle))
+#   puts ""
+# end
