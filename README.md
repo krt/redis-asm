@@ -133,7 +133,7 @@ puts JSON.parse(result).to_yaml
  - Ruby 2.1.5p273 [x86_64-darwin13.0]
  - Redis server v=2.6.17 bits=64
 
-You can try benchmarking `Redis::Asm` by running `./bench/bench.rb` in console.  
+You can try benchmarking `Redis::Asm` by running `rake bench` in console.  
 That's the result I've got on my machine.
 ```sh
 krt@mbp% ruby bench/bench.rb
