@@ -1,4 +1,6 @@
 # Redis::Asm
+[![Build Status](https://travis-ci.org/krt/redis-asm.svg?branch=master)](https://travis-ci.org/krt/redis-asm)
+[![Coverage Status](https://img.shields.io/coveralls/krt/redis-asm.svg)](https://coveralls.io/r/krt/redis-asm)
 
 ##### Fast fuzzy string search on Redis using Lua. UTF-8 ready.
 
