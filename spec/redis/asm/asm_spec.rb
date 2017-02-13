@@ -10,7 +10,7 @@ asm = Redis::Asm.new(redis)
 
 SKEY = 'redis:asm:testing:set'
 ZKEY = 'redis:asm:testing:zset'
-HKEY = 'redis:asm:testing:hash'      
+HKEY = 'redis:asm:testing:hash'
 LKEY = 'redis:asm:testing:list'
 
 describe Redis::Asm do
@@ -64,6 +64,13 @@ describe Redis::Asm do
     it "result size must be default limit(10)" do
       expect(result_set.size).to eq 10
       expect(result_list.size).to eq 10
+    end
+  end
+
+  context 'execute fuzzy searching on Redis Set with bracket char' do
+    let(:result_set)  {JSON.parse(asm.search(SKEY, '(ample'))}
+    it "result has fuzzy matched string" do
+      expect(result_set[1]).to eq({"haystack"=>"samples", "match"=>0.71428571428571})
     end
   end
 

@@ -101,7 +101,7 @@ local function split_into_utf8_bytes(str)
     end
 
     byte = byte_offsets[s_byte(str, offset_pos, offset_pos)] or 0
-    
+
     mb_str = s_sub(str, offset_pos, offset_pos + byte)
     codes[#codes + 1] = mb_str
     offset = offset + byte
@@ -117,7 +117,7 @@ end
 --]]
 local function haystack_includes_needle_char(haystack, utf_needle)
   for i = 1, #utf_needle do
-    if s_find(haystack, utf_needle[i]) then return true end
+    if s_find(haystack, utf_needle[i], 1, true) then return true end
   end
   return false
 end
@@ -128,7 +128,7 @@ local cache = {}
 * Calculate match score using levenshtein distance.
 * @param {Array.<string>} haystack
 * @param {Array.<string>} needle
-* @param {boolean} if true, stop calculating 
+* @param {boolean} if true, stop calculating
                    when the result might be lower than lowest_score
 * @param {number|nil} lowest_score
 * @return {number|nil} match score(0..1)
@@ -179,11 +179,11 @@ local should_cutoff = false
 for i = 1, #haystacks do
   if haystack_includes_needle_char(haystacks[i], utf_needle) then
     utf_word = split_into_utf8_bytes(haystacks[i])
-    
+
     if #utf_word >= #utf_needle then
       longer_length = #utf_word
 
-      if s_find(haystacks[i], needle) then
+      if s_find(haystacks[i], needle, 1, true) then
         score = #utf_needle * (1 / longer_length)
       else
         score = levenshtein_score(utf_word, utf_needle, should_cutoff, lowest_score)
@@ -236,4 +236,3 @@ end
 local text = cjson.encode(result)
 
 return(text)
-
